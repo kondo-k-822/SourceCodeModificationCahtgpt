@@ -49,7 +49,7 @@ def read_file():
     return None, None
 
 def generate_response(file_content):
-    content = f"次のPythonコードを修正してください。ただし、修正したプログラムのみを返してください：{file_content}"
+    content = f"次のPythonコードを修正して実行できるようにしてください。ただし、コードのみを返信してください。それ以外の説明は不要です。：{file_content}"
 
     try:
         # チャットのレスポンスを生成
@@ -60,7 +60,7 @@ def generate_response(file_content):
             ],
             temperature=1
         )
-
+        #print(response['choices'][0]['message']['content'].strip())
         return response['choices'][0]['message']['content'].strip()
     except Exception as e:
         print(f"応答生成中にエラーが発生しました: {e}")
