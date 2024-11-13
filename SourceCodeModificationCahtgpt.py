@@ -31,7 +31,10 @@ def read_file():
     root.withdraw()  # メインウィンドウを非表示にする
 
     # ファイル選択ダイアログを表示
-    file_path = filedialog.askopenfilename(title="ファイルを選択")
+    file_path = filedialog.askopenfilename(
+        title="ファイルを選択",
+        filetypes=[("Python files", "*.py")]
+    )
 
     if file_path:  # ファイルが選択された場合
         try:
