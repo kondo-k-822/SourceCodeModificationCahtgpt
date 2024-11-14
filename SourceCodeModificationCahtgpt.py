@@ -25,7 +25,7 @@ from tkinter import filedialog
 # OpenAI APIキーを環境変数から取得する
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def read_file():
+def pg_read_file():
     # Tkinterのウィンドウを作成
     root = tk.Tk()
     root.withdraw()  # メインウィンドウを非表示にする
@@ -48,9 +48,33 @@ def read_file():
 
     return None, None
 
-def generate_response(file_content):
-    content = f"次のPythonコードを修正して実行できるようにしてください。ただし、コードのみを返信してください。それ以外の説明は不要です。：{file_content}"
+#仕様を記述したテキストファイルを選択する。
+def design_read_file():
+    # Tkinterのウィンドウを作成
+    root = tk.Tk()
+    root.withdraw()  # メインウィンドウを非表示にする
 
+    # ファイル選択ダイアログを表示
+    file_path = filedialog.askopenfilename(
+        title="仕様ファイルを選択",
+        filetypes=[("Text files", "*.txt")]
+    )
+
+    if file_path:  # ファイルが選択された場合
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                file_content = file.read()  # ファイルの内容を読み込む
+            return file_content  # 内容を返す
+        except (IOError, UnicodeDecodeError) as e:
+            print(f"ファイルの読み込み中にエラーが発生しました: {e}")
+    else:
+        print("ファイルが選択されませんでした。")
+
+    return None
+
+def generate_response(file_content,design_file_content):
+    content = f"次のPythonコードを修正して実行できるようにしてください。ただし、コードのみを返信してください。それ以外の説明は不要です。仕様:{design_file_content}：{file_content}"
+    print(content)
     try:
         # チャットのレスポンスを生成
         response = openai.ChatCompletion.create(
@@ -60,7 +84,6 @@ def generate_response(file_content):
             ],
             temperature=1
         )
-        #print(response['choices'][0]['message']['content'].strip())
         return response['choices'][0]['message']['content'].strip()
     except Exception as e:
         print(f"応答生成中にエラーが発生しました: {e}")
@@ -92,7 +115,8 @@ def response_check(response_content):
 
 # 処理開始       
 # ファイルの内容を読み取る
-file_content, file_path = read_file()
+file_content, file_path = pg_read_file()
+design_file_content = design_read_file()
 
 #ファイルが選択されていない場合 : 処理は終了
 #ファイルが選択されている場合 : 選択したソースをAPIに投げ修正依頼を投げレスポンスを受け取り成功するまで実行
@@ -106,7 +130,7 @@ else:
     #必要であれば改修
     while count < max_retries:
         #chatGPT_APIへリクエストを投げる
-        response_content = generate_response(file_content)
+        response_content = generate_response(file_content,design_file_content)
         #修正したソースコードをファイルに書き込む
         python_new_file = response_check(response_content)
 
